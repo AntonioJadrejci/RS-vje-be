@@ -13,12 +13,12 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
         "http://127.0.0.1:5175",
+        "https://rs-vjezba1-frontend.onrender.com",
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["Content-Type"],
 )
-
 
 # Privremena pohrana zadataka u memoriji
 tasks = [

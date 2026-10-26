@@ -1,31 +1,54 @@
 
 <script setup>
-import { ref } from 'vue'
 
-const tasks = ref([
-  { id: 1, title: 'Naučiti HTTP protokol', completed: false },
-  { id: 2, title: 'Napraviti REST API', completed: false }
-])
+import { ref, onMounted } from 'vue'
 
+const API_URL = 'https://rs-vjezba1-backend.onrender.com'
+
+const tasks = ref([])
 const newTask = ref('')
 
-function addTask() {
-  const title = newTask.value.trim()
+async function loadTasks() {
+  const response = await fetch(`${API_URL}/tasks`)
+  tasks.value = await response.json()
+}
 
+async function addTask() {
+  const title = newTask.value.trim()
   if (!title) return
 
-  tasks.value.push({
-    id: Date.now(),
-    title: title,
-    completed: false
+  const response = await fetch(`${API_URL}/tasks`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title })
   })
 
+  if (!response.ok) return
+
   newTask.value = ''
+  await loadTasks()
 }
 
-function deleteTask(id) {
-  tasks.value = tasks.value.filter(task => task.id !== id)
+async function deleteTask(id) {
+  const response = await fetch(`${API_URL}/tasks/${id}`, {
+    method: 'DELETE'
+  })
+
+  if (response.ok) {
+    await loadTasks()
+  }
 }
+
+async function updateTask(task) {
+  await fetch(`${API_URL}/tasks/${task.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ completed: task.completed })
+  })
+}
+
+onMounted(loadTasks)
+
 </script>
 
 <template>
@@ -45,7 +68,11 @@ function deleteTask(id) {
     <ul>
       <li v-for="task in tasks" :key="task.id">
         <label>
-          <input type="checkbox" v-model="task.completed" />
+          <input
+  type="checkbox"
+  v-model="task.completed"
+  @change="updateTask(task)"
+/>
           <span :class="{ completed: task.completed }">
             {{ task.title }}
           </span>
